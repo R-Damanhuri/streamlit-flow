@@ -12,7 +12,7 @@ class StreamlitFlowNode:
     - **id** : str : Unique identifier for the node
     - **pos** : Tuple[float, float] : Position of the node in the canvas
     - **data** : Dict[str, any] : Arbitrary data to save in the node. Use {'content': 'Node content'} to set the content of the node
-    - **node_type** : str : Type of the node. One of ['default', 'input', 'output']
+    - **node_type** : str : Type of the node. One of ['default', 'input', 'output', 'chatDefault', 'chatInput', 'chatOutput']
     - **source_position** : str : Position of the source anchor. One of ['top', 'bottom', 'left', 'right']
     - **target_position** : str : Position of the target anchor. One of ['top', 'bottom', 'left', 'right']
     - **hidden** : bool : Whether the node is hidden
@@ -32,7 +32,7 @@ class StreamlitFlowNode:
                     id:str,
                     pos: Tuple[float, float],
                     data:Dict[str, any],
-                    node_type:Literal['default', 'input', 'output'] = 'default',
+                    node_type:Literal['default', 'input', 'output', 'chatDefault', 'chatInput', 'chatOutput'] = 'default',
                     source_position:Literal['bottom', 'top', 'left', 'right'] = 'bottom',
                     target_position:Literal['bottom', 'top', 'left', 'right'] = 'top',
                     hidden:bool=False,
@@ -104,7 +104,7 @@ class StreamlitFlowNode:
 
 
     def __validate__(self):
-        assert self.type in ['default', 'input', 'output'], f"Node type must be one of ['default', 'input', 'output']. Got {self.type}"
+        assert self.type in ['default', 'input', 'output', 'chatDefault', 'chatInput', 'chatOutput'], f"Node type must be one of ['default', 'input', 'output', 'chatDefault', 'chatInput', 'chatOutput']. Got {self.type}"
         assert self.source_position in ['top', 'bottom', 'left', 'right'], f"Source position must be one of ['top', 'bottom', 'left', 'right']. Got {self.source_position}"
         assert self.target_position in ['top', 'bottom', 'left', 'right'], f"Target position must be one of ['top', 'bottom', 'left', 'right']. Got {self.target_position}"
 
