@@ -22,6 +22,7 @@ import "bootstrap-icons/font/bootstrap-icons.css";
 import './style.css';
 
 import {MarkdownInputNode, MarkdownOutputNode, MarkdownDefaultNode} from "./components/MarkdownNode";
+import {ChatInputNode, ChatOutputNode, ChatDefaultNode} from "./components/ChatNode";
 import PaneConextMenu from "./components/PaneContextMenu";
 import NodeContextMenu from "./components/NodeContextMenu";
 import EdgeContextMenu from "./components/EdgeContextMenu";
@@ -30,7 +31,14 @@ import createElkGraphLayout from "./layouts/ElkLayout";
 
 const StreamlitFlowComponent = (props) => {
 
-    const nodeTypes = useMemo(() => ({ input: MarkdownInputNode, output: MarkdownOutputNode, default: MarkdownDefaultNode}), []);
+    const nodeTypes = useMemo(() => ({
+        input: MarkdownInputNode,
+        output: MarkdownOutputNode,
+        default: MarkdownDefaultNode,
+        chatInput: ChatInputNode,
+        chatOutput: ChatOutputNode,     
+        chatDefault: ChatDefaultNode
+    }), []);
     
     const [viewFitAfterLayout, setViewFitAfterLayout] = useState(null);
     const [nodes, setNodes, onNodesChange] = useNodesState(props.args.nodes);
@@ -51,6 +59,32 @@ const StreamlitFlowComponent = (props) => {
     const {fitView, getNodes, getEdges} = useReactFlow();
 
     // Helper Functions
+    const isChatNodeType = (type) => ['chatInput', 'chatOutput', 'chatDefault'].includes(type);
+
+    const stripFunctionsFromNodes = (list) => list.map(n => ({
+        ...n,
+        data: Object.fromEntries(Object.entries(n.data || {}).filter(([k, v]) => typeof v !== 'function'))
+    }));
+
+    const updateChatNodeContent = (nodeId, newContent) => {
+        setNodes(prevNodes => {
+            const updated = prevNodes.map(n => n.id === nodeId ? {...n, data: {...n.data, content: newContent}} : n);
+            handleDataReturnToStreamlit(updated, edges, null);
+            return updated;
+        });
+    };
+
+    const submitChatNode = (nodeId) => {
+        setNodes(prevNodes => {
+            const updated = prevNodes.map(n => {
+                if (n.id !== nodeId) return n;
+                const submittedContent = (n.data && n.data.content) || '';
+                return { ...n, data: { ...n.data, submittedContent } };
+            });
+            handleDataReturnToStreamlit(updated, edges, nodeId);
+            return updated;
+        });
+    };
     const handleLayout = () => {
         createElkGraphLayout(getNodes(), getEdges(), props.args.layoutOptions)
             .then(({nodes, edges}) => {
@@ -67,7 +101,8 @@ const StreamlitFlowComponent = (props) => {
 
         const timestamp = (new Date()).getTime();
         setLastUpdateTimestamp(timestamp);
-        Streamlit.setComponentValue({'nodes': _nodes, 'edges': _edges, 'selectedId': selectedId, 'timestamp': timestamp});
+        const nodesClean = stripFunctionsFromNodes(_nodes);
+        Streamlit.setComponentValue({'nodes': nodesClean, 'edges': _edges, 'selectedId': selectedId, 'timestamp': timestamp});
     }
 
     const calculateMenuPosition = (event) => {
@@ -209,12 +244,28 @@ const StreamlitFlowComponent = (props) => {
         handleDataReturnToStreamlit(updatedNodes, edges, null);
     }
 
+    const renderNodes = useMemo(() => {
+        return nodes.map(n => {
+            if (!isChatNodeType(n.type)) return n;
+            // inject non-serializable callbacks only for render; do not persist in state
+            return {
+                ...n,
+                connectable: true,
+                data: {
+                    ...n.data,
+                    onTextChange: (text) => updateChatNodeContent(n.id, text),
+                    onSubmit: () => submitChatNode(n.id)
+                }
+            };
+        });
+    }, [nodes]);
+
     return (
         <div style={{height: props.args.height}}>
             <ReactFlow
                 nodeTypes={nodeTypes}
                 ref={ref}
-                nodes={nodes}
+                nodes={renderNodes}
                 onNodesChange={onNodesChange}
                 onNodeDragStop={handleNodeDragStop}
                 edges={edges}

@@ -83,6 +83,9 @@ const EditNodeModal = ({show, node, handleClose, theme, setNodeContextMenu, setM
                         <option value="default">Default</option>
                         <option value="input">Input</option>
                         <option value="output">Output</option>
+                        <option value="chatDefault">Chat Default</option>
+                        <option value="chatInput">Chat Input</option>
+                        <option value="chatOutput">Chat Output</option>
                     </Form.Select>
                 </FloatingLabel>
             </Col>
