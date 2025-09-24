@@ -69,7 +69,7 @@ const StreamlitFlowComponent = (props) => {
     const updateChatNodeContent = (nodeId, newContent) => {
         setNodes(prevNodes => {
             const updated = prevNodes.map(n => n.id === nodeId ? {...n, data: {...n.data, content: newContent}} : n);
-            handleDataReturnToStreamlit(updated, edges, null);
+            handleDataReturnToStreamlit(updated, edges, nodeId);
             return updated;
         });
     };

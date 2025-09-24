@@ -48,9 +48,9 @@ const ChatInputNode = ({ data, sourcePosition }) => {
                 <button className="chat-submit" onClick={() => data.onSubmit?.()}>
                     Submit
                 </button>
-                {data.submittedContent && (
+                {data.output && (
                     <div className="chat-output">
-                        {data.submittedContent}
+                        {data.output}
                     </div>
                 )}
             </div>
@@ -73,10 +73,10 @@ const ChatOutputNode = ({ data, targetPosition }) => {
                 <button className="chat-submit" onClick={() => data.onSubmit?.()}>
                     Submit
                 </button>
-                {data.submittedContent && (
-                        <div className="chat-output">
-                            {data.submittedContent}
-                        </div>
+                {data.output && (
+                    <div className="chat-output">
+                        {data.output}
+                    </div>
                 )}
             </div>
         </>
@@ -99,9 +99,9 @@ const ChatDefaultNode = ({ data, sourcePosition, targetPosition }) => {
                 <button className="chat-submit" onClick={() => data.onSubmit?.()}>
                     Submit
                 </button>
-                {data.submittedContent && (
+                {data.output && (
                     <div className="chat-output">
-                        {data.submittedContent}
+                        {data.output}
                     </div>
                 )}
             </div>

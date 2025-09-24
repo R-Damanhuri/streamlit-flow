@@ -6,11 +6,8 @@ from streamlit_flow.elements import StreamlitFlowNode, StreamlitFlowEdge
 from streamlit_flow.state import StreamlitFlowState
 from streamlit_flow.layouts import TreeLayout
 
-
 st.set_page_config("Streamlit Flow - Chat Nodes Example", layout="wide")
-
 st.title("Streamlit Flow - Chat Nodes Example")
-
 
 def create_initial_state() -> StreamlitFlowState:
     nodes = [
@@ -48,10 +45,8 @@ def create_initial_state() -> StreamlitFlowState:
 
     return StreamlitFlowState(nodes=nodes, edges=edges)
 
-
 if "chat_state" not in st.session_state:
     st.session_state.chat_state = create_initial_state()
-
 
 col_add, col_edge, col_reset = st.columns(3)
 
@@ -74,11 +69,11 @@ with col_edge:
     if st.button("Tambah Edge Acak"):
         nodes = st.session_state.chat_state.nodes
         if len(nodes) > 1:
-            # pilih source bertipe chatInput/chatDefault, target bertipe chatDefault/chatOutput
+            import random
+
             source_candidates = [n for n in nodes if n.type in ["chatInput", "chatDefault", "input", "default"]]
             target_candidates = [n for n in nodes if n.type in ["chatDefault", "chatOutput", "default", "output"]]
             if source_candidates and target_candidates:
-                import random
                 s = random.choice(source_candidates)
                 t = random.choice(target_candidates)
                 if s.id != t.id:
@@ -94,10 +89,9 @@ with col_reset:
         st.session_state.chat_state = create_initial_state()
         st.rerun()
 
-
 st.subheader("Canvas")
 
-st.session_state.chat_state = streamlit_flow(
+state = streamlit_flow(
     key="chat_example",
     state=st.session_state.chat_state,
     height=520,
@@ -115,7 +109,24 @@ st.session_state.chat_state = streamlit_flow(
     min_zoom=0.1,
 )
 
+# cek apakah ada node submit
+selected_id = state.selected_id
+if selected_id:
+    for node in state.nodes:
+        if node.id == selected_id:
+            submitted = node.data.get("submittedContent")
+            if submitted:
+                # dummy LLM call
+                llm_output = f"OUTPUT: {submitted}"
 
+                # delete submittedContent then add output
+                node.data.pop("submittedContent", None)
+                node.data["output"] = llm_output
+
+# simpan balik ke session
+st.session_state.chat_state = state
+
+# tampilkan debug info
 col_nodes, col_edges, col_selected = st.columns(3)
 
 with col_nodes:
@@ -131,5 +142,3 @@ with col_edges:
 with col_selected:
     st.caption("Selected ID")
     st.write(st.session_state.chat_state.selected_id)
-
-
