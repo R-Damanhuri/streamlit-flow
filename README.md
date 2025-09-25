@@ -6,7 +6,7 @@ colorTo: green
 sdk: streamlit
 sdk_version: "1.25.0"
 python_version: "3.9.13"
-app_file: app.py
+app_file: streamlit_app.py
 pinned: false
 license: apache-2.0
 ---
