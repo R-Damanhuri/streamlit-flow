@@ -1,3 +1,13 @@
+# React Build
+FROM node:18 as frontend-builder
+
+WORKDIR /frontend
+
+COPY streamlit_flow/frontend/ ./
+
+RUN npm ci && npm run build
+
+# Python Build
 FROM python:3.13.5-slim
 
 WORKDIR /app
@@ -10,18 +20,16 @@ RUN apt-get update && apt-get install -y \
     && apt-get install -y nodejs \
     && rm -rf /var/lib/apt/lists/*
 
+COPY requirements.txt ./
+RUN pip install --no-cache-dir -r requirements.txt
+
+COPY src/ ./src/
 COPY streamlit_flow/ ./streamlit_flow/
 
-WORKDIR /app/streamlit_flow/frontend
-RUN npm install && npm run build
-
-WORKDIR /app
-
-COPY requirements.txt ./
-RUN pip3 install -r requirements.txt
+COPY --from=frontend-builder /frontend/build ./streamlit_flow/frontend/build
 
 EXPOSE 8501
 
 HEALTHCHECK CMD curl --fail http://localhost:8501/_stcore/health || exit 1
 
-ENTRYPOINT ["streamlit", "run", "app.py", "--server.port=8501", "--server.address=0.0.0.0"]
+ENTRYPOINT ["streamlit", "run", "src/streamlit_app.py", "--server.port=8501", "--server.address=0.0.0.0"]
