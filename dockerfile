@@ -10,9 +10,6 @@ RUN apt-get update && apt-get install -y \
     && apt-get install -y nodejs \
     && rm -rf /var/lib/apt/lists/*
 
-COPY requirements.txt ./
-RUN pip install --no-cache-dir -r requirements.txt
-
 COPY src/ ./src/
 COPY streamlit_flow/ ./streamlit_flow/
 
@@ -20,6 +17,9 @@ WORKDIR /app/streamlit_flow/frontend
 RUN npm install && npm run build
 
 WORKDIR /app
+
+COPY requirements.txt ./
+RUN pip3 install -r requirements.txt
 
 EXPOSE 8501
 
