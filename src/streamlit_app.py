@@ -29,7 +29,7 @@ if "chat_state" not in st.session_state:
 
 st.subheader("Canvas")
 
-state = streamlit_flow(
+st.session_state.chat_state = streamlit_flow(
     key="chat_example",
     state=st.session_state.chat_state,
     height=520,
@@ -48,21 +48,20 @@ state = streamlit_flow(
 )
 
 # cek apakah ada node submit
-selected_id = state.selected_id
+selected_id = st.session_state.chat_state.selected_id
 if selected_id:
-    for node in state.nodes:
+    for i, node in enumerate(st.session_state.chat_state.nodes):
         if node.id == selected_id:
             submitted = node.data.get("submittedContent")
             if submitted:
-                # dummy LLM call
                 llm_output = f"OUTPUT: {submitted}"
+                
+                new_data = dict(node.data)
+                new_data.pop("submittedContent", None)
+                new_data["output"] = llm_output
 
-                # delete submittedContent then add output
-                node.data["output"] = llm_output
-                node.data.pop("submittedContent", None)
-
-# simpan balik ke session
-st.session_state.chat_state = state
+                st.session_state.chat_state.nodes[i].data = new_data
+                st.rerun()
 
 col1, col2, col3, col_selected = st.columns(4)
 
